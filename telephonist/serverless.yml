@@ -7,9 +7,9 @@ provider:
 package:
   artifact: bin/release/netcoreapp1.0/deploy-package.zip
 functions:
-  get-details-of-current-on-call-person:
-    handler: FsharpHandlers::Telephonist.OperatorsAPI::getDetailsOfCurrentOnCallPerson
-  twilio-incoming-call-handler:
-    handler: CsharpHandlers::Telephonist.TwilioHandler::HandleIncomingCall
-  test-on-call-number:
-    handler: CsharpHandlers::Telephonist.OnCallNumberAPI::Dial
+  GetDetailsForCurrentOnCallOperator:
+    handler: TelephonistService::Telephonist.ScheduleAPI::GetDetailsForCurrentOnCallOperator
+    environment:
+      PAGER_DUTY_DOMAIN: ${file(.local-keys.yml):PAGER_DUTY_DOMAIN}
+      PAGER_DUTY_API_KEY: ${file(.local-keys.yml):PAGER_DUTY_API_KEY}
+      PAGER_DUTY_SCHEDULE_ID: ${file(.local-keys.yml):PAGER_DUTY_SCHEDULE_ID}

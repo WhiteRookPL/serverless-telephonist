@@ -1,0 +1,3 @@
+PAGER_DUTY_DOMAIN: <Your subdomain used PagerDuty>
+PAGER_DUTY_API_KEY: <Your API to PagerDuty>
+PAGER_DUTY_SCHEDULE_ID: <ID of your desired schedule in PagerDuty>

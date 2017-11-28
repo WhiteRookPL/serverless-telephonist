@@ -1,2 +1,6 @@
-# Serverless directories:
-.serverless
+# .NET related binaries:
+bin/
+obj/
+
+# Private credentials:
+.local-keys.yml
