@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp1.0</TargetFramework>
-    <AssemblyName>TelephonistService</AssemblyName>
-    <PackageId>TelephonistService</PackageId>
+    <AssemblyName>TelephonistServiceCSharp</AssemblyName>
+    <PackageId>TelephonistServiceCSharp</PackageId>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="NETStandard.Library" Version="1.6.0" />

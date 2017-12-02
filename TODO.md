@@ -1,6 +1,5 @@
 - API Gateway for 3 endpoints.
 - Lambdas:
-  - get-on-call - GET, returns JSON.
   - test-on-call - POST, no body mapping, returns status code only, empty response.
   - twilio-call-handler - POST, form-like body, returns status code + XML (TwiML).
     - Calling get-on-call lambda internally.

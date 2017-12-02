@@ -1,4 +1,4 @@
-service: telephonist
+service: telephonist-csharp
 provider:
   name: aws
   profile: private
@@ -8,7 +8,7 @@ package:
   artifact: bin/release/netcoreapp1.0/deploy-package.zip
 functions:
   GetDetailsForCurrentOnCallOperator:
-    handler: TelephonistService::Telephonist.ScheduleAPI::GetDetailsForCurrentOnCallOperator
+    handler: TelephonistServiceCSharp::Telephonist.ScheduleAPI::GetDetailsForCurrentOnCallOperator
     environment:
       PAGER_DUTY_DOMAIN: ${file(.local-keys.yml):PAGER_DUTY_DOMAIN}
       PAGER_DUTY_API_KEY: ${file(.local-keys.yml):PAGER_DUTY_API_KEY}

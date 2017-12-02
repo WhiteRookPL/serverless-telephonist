@@ -1,0 +1,12 @@
+service: telephonist-fsharp
+provider:
+  name: aws
+  profile: private
+  region: eu-central-1
+  runtime: dotnetcore1.0
+package:
+  artifact: bin/release/netcoreapp1.0/deploy-package.zip
+functions:
+  TestOnCallPhoneNumber:
+    handler: TelephonistServiceFSharp::Telephonist.DialingAPI::testOnCallPhoneNumber
+    environment:
