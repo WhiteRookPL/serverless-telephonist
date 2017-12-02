@@ -1,115 +1,36 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
 
 using Amazon.Lambda.Core;
 using Amazon.Lambda.Serialization.Json;
+
+using Telephonist.Models;
+using Telephonist.Utilities;
 
 [assembly:LambdaSerializer(typeof(JsonSerializer))]
 
 namespace Telephonist
 {
-  public class UserContactMethod {
-    public string type { get; set; }
-    public string country_code { get; set; }
-    public string phone_number { get; set; }
+  public class Request
+  {
+    public override string ToString()
+    {
+      return "Request()";
+    }
   }
 
-  public class User {
-    public string id { get; set; }
-    public string name { get; set; }
-    public string time_zone { get; set; }
-    public List<UserContactMethod> contact_methods { get; set; }
-  }
-
-  public class Request {}
-
-  public class Response {
+  public class Response
+  {
+    public string Name { get; set; }
     public string TimeZone { get; set; }
     public string PhoneNumber { get; set; }
-  }
 
-  public static class WebHelpers {
-    public static string ToQueryString(Dictionary<string, string> source)
+    public override string ToString()
     {
-      return String.Join("&", source.Select(kv => String.Format("{0}={1}", WebUtility.UrlEncode(kv.Key), WebUtility.UrlEncode(kv.Value))).ToList());
-    }
-
-    public static T ParseJSON<T>(string data) {
-      byte[] byteArray = Encoding.ASCII.GetBytes(data);
-      MemoryStream stream = new MemoryStream( byteArray );
-
-      JsonSerializer parser = new JsonSerializer();
-      return parser.Deserialize<T>(stream);
-    }
-  }
-
-  public class PagerDutyClient {
-    private string subdomain;
-    private string apiToken;
-
-    private Uri uri;
-
-    private HttpClient client;
-
-    public PagerDutyClient(string subdomain, string apiToken) {
-      this.subdomain = subdomain;
-      this.apiToken = apiToken;
-
-      this.uri = new Uri(String.Format(CultureInfo.InvariantCulture, "https://{0}.pagerduty.com/api/v1", this.subdomain));
-
-      this.client = new HttpClient();
-
-      this.client.BaseAddress = this.uri;
-
-      this.client.DefaultRequestHeaders.Accept.Clear();
-      this.client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-      this.client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", this.apiToken);
-    }
-
-    public async Task<string> GetCurrentOnCallOperatorUserId(string scheduleId) {
-      DateTime now = DateTime.Now;
-      DateTime oneSecondLater = now.AddSeconds(1);
-
-      Dictionary<string, string> parameters = new Dictionary<string, string>();
-      parameters["since"] = now.ToString("s", CultureInfo.InvariantCulture);
-      parameters["until"] = oneSecondLater.ToString("s", CultureInfo.InvariantCulture);
-
-      string path = String.Format(CultureInfo.InvariantCulture, "/schedules/{0}?{1}", scheduleId, WebHelpers.ToQueryString(parameters));
-
-      HttpResponseMessage response = await client.GetAsync(path);
-
-      if (response.IsSuccessStatusCode)
-      {
-        return await response.Content.ReadAsStringAsync();
-      }
-
-      return null;
-    }
-
-    public async Task<string> GetUserDetails(string userId) {
-      Dictionary<string, string> parameters = new Dictionary<string, string>();
-      parameters["includes[]"] = "contact_methods";
-
-      string path = String.Format(CultureInfo.InvariantCulture, "/users/{0}?{1}", userId, WebHelpers.ToQueryString(parameters));
-
-      HttpResponseMessage response = await client.GetAsync(path);
-
-      if (response.IsSuccessStatusCode)
-      {
-        return await response.Content.ReadAsStringAsync();
-      }
-
-      return null;
+      return String.Format(CultureInfo.InvariantCulture, "Response(Name={0}, TZ={1}, Phone={2}", Name, TimeZone, PhoneNumber);
     }
   }
 
@@ -122,49 +43,78 @@ namespace Telephonist
 
       string scheduleId = Environment.GetEnvironmentVariable("PAGER_DUTY_SCHEDULE_ID");
 
+      LambdaLogger.Log(String.Format(CultureInfo.InvariantCulture, "REQUEST: {0}", request));
+
+      LambdaLogger.Log(String.Format(CultureInfo.InvariantCulture, "PARAM: subdomain={0}", subdomain));
+      LambdaLogger.Log(String.Format(CultureInfo.InvariantCulture, "PARAM: apiToken={0}", apiToken));
+      LambdaLogger.Log(String.Format(CultureInfo.InvariantCulture, "PARAM: scheduleId={0}", scheduleId));
+
       PagerDutyClient service = new PagerDutyClient(subdomain, apiToken);
 
-      User user = await GetCurrentOnCallOperatorUserId(subdomain, apiToken, scheduleId);
+      User user = await GetCurrentOnCallOperator(subdomain, apiToken, scheduleId);
 
-      if (user != null) {
-        return await GetUserDetails(subdomain, apiToken, user.id);
+      if (user != null)
+      {
+        UserPhone phone = await GetUserContactMethods(subdomain, apiToken, user.Id);
+
+        Response result = new Response()
+        {
+          Name = user.Name,
+          TimeZone = WebHelpers.MapToTimeZoneCompliantWithISO(user.TimeZone),
+          PhoneNumber = String.Format("+{0}{1}", phone.CountryCode, phone.PhoneNumber)
+        };
+
+        LambdaLogger.Log(String.Format(CultureInfo.InvariantCulture, "RESPONSE: {0}", result));
+
+        return result;
       } else {
         return null;
       }
     }
 
-    public async Task<User> GetCurrentOnCallOperatorUserId(string subdomain, string apiToken, string scheduleId)
+    private async Task<User> GetCurrentOnCallOperator(string subdomain, string apiToken, string scheduleId)
     {
       PagerDutyClient client = new PagerDutyClient(subdomain, apiToken);
-      string data = await client.GetCurrentOnCallOperatorUserId(scheduleId);
+      string data = await client.GetCurrentOnCallOperator(scheduleId);
 
-      if (data == null) {
+      LambdaLogger.Log(String.Format(CultureInfo.InvariantCulture, "GetCurrentOnCallOperator: {0}", data));
+
+      if (data == null)
+      {
         return null;
       }
 
-      return WebHelpers.ParseJSON<User>(data);
+      dynamic response = WebHelpers.ParseJSON(data);
+      dynamic user = response.schedule.final_schedule.rendered_schedule_entries[0].user;
+
+      return new User()
+      {
+        Id = user.id,
+        Name = user.name,
+        TimeZone = response.schedule.time_zone
+      };
     }
 
-    public async Task<Response> GetUserDetails(string subdomain, string apiToken, string userId)
+    private async Task<UserPhone> GetUserContactMethods(string subdomain, string apiToken, string userId)
     {
       PagerDutyClient client = new PagerDutyClient(subdomain, apiToken);
-      string data = await client.GetUserDetails(userId);
+      string data = await client.GetUserContactMethods(userId);
 
-      if (data == null) {
+      LambdaLogger.Log(String.Format(CultureInfo.InvariantCulture, "GetUserContactMethods: {0}", data));
+
+      if (data == null)
+      {
         return null;
       }
 
-      User user = WebHelpers.ParseJSON<User>(data);
+      dynamic response = WebHelpers.ParseJSON(data);
 
-      List<UserContactMethod> contacts = user.contact_methods.Where(method => method.type == "phone").ToList();
+      var contacts = ((IEnumerable<dynamic>) response.contact_methods).Where(method => method.type == "phone");
+      List<UserPhone> phones = contacts.Select(method => new UserPhone() { CountryCode = method.country_code, PhoneNumber = method.phone_number }).ToList();
 
-      if (contacts.Count != 0)
+      if (phones.Count != 0)
       {
-        UserContactMethod contact = contacts.First();
-        return new Response() {
-          TimeZone = user.time_zone,
-          PhoneNumber = String.Format("+{0}{1}", contact.country_code, contact.phone_number)
-        };
+        return phones.First();
       }
 
       return null;
