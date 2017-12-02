@@ -2,6 +2,14 @@ using Telephonist.Utilities;
 
 namespace Telephonist.Models
 {
+  public class EmptyRequest
+  {
+    public override string ToString()
+    {
+      return "EmptyRequest()";
+    }
+  }
+
   public class UserPhone
   {
     public string CountryCode { get; set; }

@@ -5,24 +5,13 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Amazon.Lambda.Core;
-using Amazon.Lambda.Serialization.Json;
 
 using Telephonist.Models;
 using Telephonist.Utilities;
 
-[assembly:LambdaSerializer(typeof(JsonSerializer))]
-
 namespace Telephonist
 {
-  public class Request
-  {
-    public override string ToString()
-    {
-      return "Request()";
-    }
-  }
-
-  public class Response
+  public class OnCallOperatorDetails
   {
     public string Name { get; set; }
     public string TimeZone { get; set; }
@@ -30,13 +19,13 @@ namespace Telephonist
 
     public override string ToString()
     {
-      return String.Format(CultureInfo.InvariantCulture, "Response(Name={0}, TZ={1}, Phone={2}", Name, TimeZone, PhoneNumber);
+      return String.Format(CultureInfo.InvariantCulture, "OnCallOperatorDetails(Name={0}, TZ={1}, Phone={2}", Name, TimeZone, PhoneNumber);
     }
   }
 
   public class ScheduleAPI
   {
-    public async Task<Response> GetDetailsForCurrentOnCallOperator(Request request, ILambdaContext context)
+    public async Task<OnCallOperatorDetails> GetDetailsForCurrentOnCallOperator(EmptyRequest request, ILambdaContext context)
     {
       string subdomain = Environment.GetEnvironmentVariable("PAGER_DUTY_DOMAIN");
       string apiToken = Environment.GetEnvironmentVariable("PAGER_DUTY_API_KEY");
@@ -57,7 +46,7 @@ namespace Telephonist
       {
         UserPhone phone = await GetUserContactMethods(subdomain, apiToken, user.Id);
 
-        Response result = new Response()
+        OnCallOperatorDetails result = new OnCallOperatorDetails()
         {
           Name = user.Name,
           TimeZone = WebHelpers.MapToTimeZoneCompliantWithISO(user.TimeZone),

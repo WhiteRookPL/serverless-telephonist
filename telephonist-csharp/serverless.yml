@@ -13,3 +13,6 @@ functions:
       PAGER_DUTY_DOMAIN: ${file(.local-keys.yml):PAGER_DUTY_DOMAIN}
       PAGER_DUTY_API_KEY: ${file(.local-keys.yml):PAGER_DUTY_API_KEY}
       PAGER_DUTY_SCHEDULE_ID: ${file(.local-keys.yml):PAGER_DUTY_SCHEDULE_ID}
+  HandleIncomingCall:
+    handler: TelephonistServiceCSharp::Telephonist.TwilioHandler::HandleIncomingCall
+    environment:
