@@ -4,3 +4,6 @@ obj/
 
 # Private credentials:
 .local-keys.yml
+
+# Serverless Framework private stuff:
+.serverless/
