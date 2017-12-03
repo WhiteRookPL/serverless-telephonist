@@ -20,9 +20,16 @@ functions:
       PAGER_DUTY_API_KEY: ${file(.local-keys.yml):PAGER_DUTY_API_KEY}
       PAGER_DUTY_SCHEDULE_ID: ${file(.local-keys.yml):PAGER_DUTY_SCHEDULE_ID}
     events:
-     - http:
-         path: operators/current/details
-         method: get
+      - http:
+          path: operators/current/details
+          method: get
+          integration: lambda
+          cors: true
+          authorization:
+            Fn::ImportValue: "serverless-telephonist-${self:provider.stage}-cognito-user-pool"
+          statusCodes:
+            200:
+              pattern: ''
   HandleIncomingCall:
     handler: TelephonistServiceCSharp::Telephonist.TwilioHandler::HandleIncomingCall
     environment:

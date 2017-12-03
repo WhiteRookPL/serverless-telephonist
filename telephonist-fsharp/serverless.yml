@@ -20,4 +20,10 @@ functions:
       - http:
           path: calls/test
           method: post
+          integration: lambda
           cors: true
+          authorization:
+            Fn::ImportValue: "serverless-telephonist-${self:provider.stage}-cognito-user-pool"
+          statusCodes:
+            200:
+              pattern: ''

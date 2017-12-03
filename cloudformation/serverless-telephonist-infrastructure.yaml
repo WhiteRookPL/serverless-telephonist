@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: >
+  Setting up all other dependencies for Serverless Telephonist that are not
+  managed by Serverless Framework e.g. Cognito user pool, S3 bucket for website.
+
+Parameters:
+
+  STAGE:
+    Description: >
+      This points out which stage should be used - we call it an environment.
+    Type: String
+    Default: production
+    AllowedValues:
+      - production
+    ConstraintDescription: >
+      Must be one of the defined allowed values.
+
+Resources:
+
+  ServerlessTelephonistWebsiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: "serverless-telephonist-ui"
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: 404.html
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders: ["*"]
+            AllowedMethods: ["GET", "POST"]
+            AllowedOrigins: ["*"]
+
+  ServerlessTelephonistCognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub
+        - serverless-telephonist-${Stage}-cognito-user-pool
+        - { Stage: !Ref STAGE }
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: true
+      MfaConfiguration: "OFF"
+      AutoVerifiedAttributes:
+        - email
+      AliasAttributes:
+        - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: false
+          RequireUppercase: true
+
+Outputs:
+
+  ServerlessTelephonistWebsiteBucketUrl:
+    Description: >
+      URL to the S3 website associated with the bucket.
+    Value: !GetAtt "ServerlessTelephonistWebsiteBucket.WebsiteURL"
+
+  ServerlessTelephonistCognitoUserPoolArn:
+    Description: >
+      Name of AWS Lambda storage S3 bucket.
+    Value: !GetAtt "ServerlessTelephonistCognitoUserPool.Arn"
+    Export:
+      Name: !Sub
+        - "serverless-telephonist-${Stage}-cognito-user-pool"
+        - { Stage: !Ref STAGE }
