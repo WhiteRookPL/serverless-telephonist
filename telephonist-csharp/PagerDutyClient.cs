@@ -21,7 +21,7 @@ namespace Telephonist
     public PagerDutyClient(string subdomain, string apiToken)
     {
       this.subdomain = subdomain;
-      this.authorization = String.Format(CultureInfo.InvariantCulture, "Token token={0}", apiToken);
+      this.authorization = $"Token token={apiToken}";
 
       this.client = new HttpClient();
       this.client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", this.authorization);
@@ -36,12 +36,13 @@ namespace Telephonist
       parameters["since"] = now.ToString("s", CultureInfo.InvariantCulture);
       parameters["until"] = oneSecondLater.ToString("s", CultureInfo.InvariantCulture);
 
-      string path = String.Format(CultureInfo.InvariantCulture, "https://{0}.pagerduty.com/api/v1/schedules/{1}?{2}", this.subdomain, scheduleId, WebHelpers.ToQueryString(parameters));
+      string queryString = WebHelpers.ToQueryString(parameters);
+      string path = $"https://{this.subdomain}.pagerduty.com/api/v1/schedules/{scheduleId}?{queryString}";
 
       HttpResponseMessage response = await this.client.GetAsync(path);
 
-      LambdaLogger.Log(String.Format(CultureInfo.InvariantCulture, "path: {0}", path));
-      LambdaLogger.Log(String.Format(CultureInfo.InvariantCulture, "Status Code: {0}", response.StatusCode));
+      LambdaLogger.Log($"path: {path}");
+      LambdaLogger.Log($"Status Code: {response.StatusCode}");
 
       if (response.IsSuccessStatusCode)
       {
@@ -53,12 +54,12 @@ namespace Telephonist
 
     public async Task<string> GetUserContactMethods(string userId)
     {
-      string path = String.Format(CultureInfo.InvariantCulture, "https://{0}.pagerduty.com/api/v1/users/{1}/contact_methods", this.subdomain, userId);
+      string path = $"https://{this.subdomain}.pagerduty.com/api/v1/users/{userId}/contact_methods";
 
       HttpResponseMessage response = await this.client.GetAsync(path);
 
-      LambdaLogger.Log(String.Format(CultureInfo.InvariantCulture, "path: {0}", path));
-      LambdaLogger.Log(String.Format(CultureInfo.InvariantCulture, "Status Code: {0}", response.StatusCode));
+      LambdaLogger.Log($"path: {path}");
+      LambdaLogger.Log($"Status Code: {response.StatusCode}");
 
       if (response.IsSuccessStatusCode)
       {

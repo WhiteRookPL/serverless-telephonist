@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -19,7 +18,7 @@ namespace Telephonist
 
     public override string ToString()
     {
-      return String.Format(CultureInfo.InvariantCulture, "OnCallOperatorDetails(Name={0}, TZ={1}, Phone={2}", Name, TimeZone, PhoneNumber);
+      return $"OnCallOperatorDetails(Name={Name}, TZ={TimeZone}, Phone={PhoneNumber}";
     }
   }
 
@@ -32,11 +31,11 @@ namespace Telephonist
 
       string scheduleId = Environment.GetEnvironmentVariable("PAGER_DUTY_SCHEDULE_ID");
 
-      LambdaLogger.Log(String.Format(CultureInfo.InvariantCulture, "REQUEST: {0}", request));
+      LambdaLogger.Log($"REQUEST: {request}");
 
-      LambdaLogger.Log(String.Format(CultureInfo.InvariantCulture, "PARAM: subdomain={0}", subdomain));
-      LambdaLogger.Log(String.Format(CultureInfo.InvariantCulture, "PARAM: apiToken={0}", apiToken));
-      LambdaLogger.Log(String.Format(CultureInfo.InvariantCulture, "PARAM: scheduleId={0}", scheduleId));
+      LambdaLogger.Log($"PARAM: subdomain={subdomain}");
+      LambdaLogger.Log($"PARAM: apiToken={apiToken}");
+      LambdaLogger.Log($"PARAM: scheduleId={scheduleId}");
 
       PagerDutyClient service = new PagerDutyClient(subdomain, apiToken);
 
@@ -49,11 +48,11 @@ namespace Telephonist
         OnCallOperatorDetails result = new OnCallOperatorDetails()
         {
           Name = user.Name,
-          TimeZone = WebHelpers.MapToTimeZoneCompliantWithISO(user.TimeZone),
-          PhoneNumber = String.Format("+{0}{1}", phone.CountryCode, phone.PhoneNumber)
+          TimeZone = WebHelpers.MapToOlsonTimeZone(user.TimeZone),
+          PhoneNumber = $"+{phone.CountryCode}{phone.PhoneNumber}"
         };
 
-        LambdaLogger.Log(String.Format(CultureInfo.InvariantCulture, "RESPONSE: {0}", result));
+        LambdaLogger.Log($"RESPONSE: {result}");
 
         return result;
       } else {
@@ -66,7 +65,7 @@ namespace Telephonist
       PagerDutyClient client = new PagerDutyClient(subdomain, apiToken);
       string data = await client.GetCurrentOnCallOperator(scheduleId);
 
-      LambdaLogger.Log(String.Format(CultureInfo.InvariantCulture, "GetCurrentOnCallOperator: {0}", data));
+      LambdaLogger.Log($"GetCurrentOnCallOperator: {data}");
 
       if (data == null)
       {
@@ -89,7 +88,7 @@ namespace Telephonist
       PagerDutyClient client = new PagerDutyClient(subdomain, apiToken);
       string data = await client.GetUserContactMethods(userId);
 
-      LambdaLogger.Log(String.Format(CultureInfo.InvariantCulture, "GetUserContactMethods: {0}", data));
+      LambdaLogger.Log($"GetUserContactMethods: {data}");
 
       if (data == null)
       {

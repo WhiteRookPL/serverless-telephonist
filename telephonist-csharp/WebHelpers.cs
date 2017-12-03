@@ -5,12 +5,50 @@ using System.Net;
 using System.Text;
 using System.Collections.Generic;
 
+using Amazon.Lambda.Core;
+using Amazon.Lambda.Serialization.Json;
+
 using Newtonsoft.Json.Linq;
 
 namespace Telephonist.Utilities
 {
-  public static class WebHelpers {
-    private static readonly Dictionary<string, string> TimeZones = new Dictionary<string, string>()
+  public static class WebHelpers
+  {
+    public static string ToQueryString(Dictionary<string, string> source)
+    {
+      return String.Join("&", source.Select(kv => $"{WebUtility.UrlEncode(kv.Key)}={WebUtility.UrlEncode(kv.Value)}").ToList());
+    }
+
+    public static dynamic ParseJSON(string data)
+    {
+      return JValue.Parse(data);
+    }
+
+    public static T ParseJSON<T>(string data)
+    {
+      using(MemoryStream stream = new MemoryStream(Encoding.ASCII.GetBytes(data)))
+      {
+        JsonSerializer parser = new JsonSerializer();
+        return parser.Deserialize<T>(stream);
+      }
+    }
+
+    public static string MapToOlsonTimeZone(string pagerDutyTZ)
+    {
+      return PagerDutyToOlsonTimeZones[pagerDutyTZ];
+    }
+
+    public static TimeZoneInfo OlsonTimeZoneToTimeZoneInfo(string olsonTimeZoneId)
+    {
+      TimeZoneInfo timeZoneInfo = default(TimeZoneInfo);
+
+      try { timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(olsonTimeZoneId); }
+      catch (Exception) {}
+
+      return timeZoneInfo;
+    }
+
+    private static readonly Dictionary<string, string> PagerDutyToOlsonTimeZones = new Dictionary<string, string>()
     {
       { "International Date Line West", "Pacific/Midway" },
       { "Midway Island", "Pacific/Midway" },
@@ -162,20 +200,5 @@ namespace Telephonist.Utilities
       { "Chatham Is.", "Pacific/Chatham" },
       { "Samoa", "Pacific/Apia" }
     };
-
-    public static string ToQueryString(Dictionary<string, string> source)
-    {
-      return String.Join("&", source.Select(kv => String.Format("{0}={1}", WebUtility.UrlEncode(kv.Key), WebUtility.UrlEncode(kv.Value))).ToList());
-    }
-
-    public static dynamic ParseJSON(string data)
-    {
-      return JValue.Parse(data);
-    }
-
-    public static string MapToTimeZoneCompliantWithISO(string pagerDutyTZ)
-    {
-      return TimeZones[pagerDutyTZ];
-    }
   }
 }

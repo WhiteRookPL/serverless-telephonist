@@ -3,6 +3,7 @@ provider:
   name: aws
   profile: private
   region: eu-central-1
+  stage: production
   runtime: dotnetcore1.0
 package:
   artifact: bin/release/netcoreapp1.0/deploy-package.zip
@@ -10,3 +11,13 @@ functions:
   TestOnCallPhoneNumber:
     handler: TelephonistServiceFSharp::Telephonist.DialingAPI::testOnCallPhoneNumber
     environment:
+      TWILIO_ACCOUNT_SID: ${file(.local-keys.yml):TWILIO_ACCOUNT_SID}
+      TWILIO_API_TOKEN: ${file(.local-keys.yml):TWILIO_API_TOKEN}
+      CALLER: ${file(.local-keys.yml):CALLER}
+      ON_CALL_NUMBER: ${file(.local-keys.yml):ON_CALL_NUMBER}
+      TEST_SCENARIO_TWIML_URL: ${file(.local-keys.yml):TEST_SCENARIO_TWIML_URL}
+    events:
+      - http:
+          path: calls/test
+          method: post
+          cors: true

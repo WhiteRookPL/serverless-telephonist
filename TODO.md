@@ -1,10 +1,3 @@
-- API Gateway for 3 endpoints.
-- Lambdas:
-  - test-on-call - POST, no body mapping, returns status code only, empty response.
-  - twilio-call-handler - POST, form-like body, returns status code + XML (TwiML).
-    - Calling get-on-call lambda internally.
-    - Easiest from those 3 lambdas will be in F#.
-
 - Cognito used for user management.
   - Just login page, no way to sign-up.
 

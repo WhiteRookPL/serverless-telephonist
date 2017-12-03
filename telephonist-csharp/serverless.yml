@@ -3,7 +3,13 @@ provider:
   name: aws
   profile: private
   region: eu-central-1
+  stage: production
   runtime: dotnetcore1.0
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - lambda:InvokeFunction
+      Resource: "*"
 package:
   artifact: bin/release/netcoreapp1.0/deploy-package.zip
 functions:
@@ -13,6 +19,27 @@ functions:
       PAGER_DUTY_DOMAIN: ${file(.local-keys.yml):PAGER_DUTY_DOMAIN}
       PAGER_DUTY_API_KEY: ${file(.local-keys.yml):PAGER_DUTY_API_KEY}
       PAGER_DUTY_SCHEDULE_ID: ${file(.local-keys.yml):PAGER_DUTY_SCHEDULE_ID}
+    events:
+     - http:
+         path: operators/current/details
+         method: get
   HandleIncomingCall:
     handler: TelephonistServiceCSharp::Telephonist.TwilioHandler::HandleIncomingCall
     environment:
+      STAGE: ${self:provider.stage}
+    events:
+      - http:
+          path: calls/receive
+          method: post
+          integration: lambda
+          response:
+            headers:
+              Content-Type: "'application/xml'"
+            template: $input.path("$")
+            statusCodes:
+              200:
+                pattern: ''
+                template:
+                  application/json: $input.path("$")
+                headers:
+                  Content-Type: "'application/xml'"
