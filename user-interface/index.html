@@ -1,76 +1,168 @@
-<!doctype html>
+<!DOCTYPE html>
 <html class="no-js" lang="">
   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title></title>
-    <meta name="description" content="">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
 
-    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <title>Serverless Telephonist</title>
+
+    <meta name="description" content="Serverless Telephonist -User Interface" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link rel="stylesheet" href="css/vendor/bootstrap.min.css" />
+
     <style>
       body {
         padding-top: 50px;
         padding-bottom: 20px;
       }
     </style>
-    <link rel="stylesheet" href="css/bootstrap-theme.min.css">
-    <link rel="stylesheet" href="css/main.css">
 
-    <script src="js/vendor/modernizr-2.8.3-respond-1.4.2.min.js"></script>
+    <link rel="stylesheet" href="css/vendor/bootstrap-theme.min.css" />
+    <link rel="stylesheet" href="css/main.css" />
+
+    <script src="src/vendor/modernizr-2.8.3-respond-1.4.2.min.js"></script>
   </head>
   <body>
     <!--[if lt IE 8]>
-    <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+    <p class="browserupgrade">
+      You are using an <strong>outdated</strong> browser.
+      Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.
+    </p>
     <![endif]-->
+
     <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
       <div class="container">
         <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <button type="button" class="navbar-toggle collapsed"
+                  data-toggle="collapse" data-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar">
             <span class="sr-only">Toggle navigation</span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#">Serverless Telephonist</a>
+          <span class="navbar-brand">Serverless Telephonist</span>
         </div>
-        <div id="login-component" class="navbar-collapse collapse">
-          <form class="navbar-form navbar-right" role="form">
+
+        <div class="navbar-collapse collapse">
+          <form id="sign-in-box" class="navbar-form navbar-right" role="form">
             <div class="form-group">
-              <input type="text" placeholder="Email" class="form-control">
+              <input id="sign-in-box-login" type="text" placeholder="Email" class="form-control" />
             </div>
             <div class="form-group">
-              <input type="password" placeholder="Password" class="form-control">
+              <input id="sign-in-box-password" type="password" placeholder="Password" class="form-control /">
             </div>
-            <button type="submit" class="btn btn-success">Sign in</button>
+            <button id="sign-in-box-submit" type="submit" class="btn btn-success">Sign in</button>
+          </form>
+
+          <form id="sign-out-box" class="none navbar-form navbar-right" role="form">
+            <button id="sign-out-box-submit" type="submit" class="btn btn-success">Sign out</button>
           </form>
         </div>
       </div>
     </nav>
 
     <div class="jumbotron">
+      <div id="error-box" class="error-box">
+      </div>
+
       <div class="container">
         <h1>Serverless Telephonist</h1>
         <h2>Microsoft User Group - Katowice <strong>(06.12.2017)</strong></h2>
+      </div>
+
+      <div id="content" class="container none">
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            <h4 class="panel-title">Current On-Call Operator</h4>
+          </div>
+          <div class="panel-body">
+            <ul>
+              <li><strong>Name</strong>: <span id="on-call-name"></span></li>
+              <li><strong>Phone number</strong>: <span id="on-call-phone"></span></li>
+              <li><strong>Timezone</strong>: <span id="on-call-tz"></span></li>
+            </ul>
+            <hr/>
+            <button id="test-on-call" type="button" class="btn btn-primary">Test Number</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal fade" id="change-password-modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Change password</h5>
+            </div>
+            <div class="modal-body">
+              <div id="password-change-box" class="container">
+                <form class="form" role="form">
+                  <div class="form-group row">
+                    <input id="change-password-box-email"
+                           type="text" placeholder="Email" class="form-control" />
+                  </div>
+                  <div class="form-group row">
+                    <input id="change-password-box-new-password"
+                           type="password" placeholder="New password" class="form-control" />
+                  </div>
+                  <div class="form-group row">
+                    <input id="change-password-box-new-password-again"
+                           type="password" placeholder="Re-enter new password" class="form-control" />
+                  </div>
+                </form>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button id="change-password" type="submit" class="btn btn-success">Change password</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal fade" id="test-on-call-modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Calling...</h5>
+            </div>
+            <div class="modal-body">
+              <p>You should get incoming call right now.</p>
+            </div>
+            <div class="modal-footer">
+              <button id="test-on-call-approved" type="submit" class="btn btn-success">Got it!</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
     <div class="container">
       <footer>
-        <p>&copy; White Rook 2017</p>
+        <p>Copyright - White Rook &copy; 2017</p>
       </footer>
     </div>
 
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-    <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.11.2.min.js"><\/script>')</script>
+    <div class="none">
+      <div id="error-box-template">
+        <div class="alert alert-danger alert-dismissible" role="alert">
+          <strong>Error!</strong> <span>{{CONTENT}}</span>
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+      </div>
+    </div>
 
-    <script src="js/vendor/bootstrap.min.js"></script>
+    <script src="src/vendor/jquery-1.11.2.min.js"></script>
 
-    <script src="js/vendor/aws-sdk.min.js"></script>
-    <script src="js/vendor/aws-cognito-sdk.min.js"></script>
-    <script src="js/vendor/amazon-cognito-identity.min.js"></script>
+    <script src="src/vendor/bootstrap.min.js"></script>
 
-    <script src="js/main.js"></script>
+    <script src="src/vendor/aws-sdk.min.js"></script>
+    <script src="src/vendor/aws-cognito-sdk.min.js"></script>
+    <script src="src/vendor/amazon-cognito-identity.min.js"></script>
+
+    <script src="src/config.js"></script>
+    <script src="src/main.js"></script>
   </body>
 </html>

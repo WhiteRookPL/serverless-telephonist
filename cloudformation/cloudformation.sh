@@ -7,15 +7,16 @@ STACK_NAME="serverless-telephonist-infrastructure"
 
 if [[ "${OPERATION}" == "create" ]]; then
 
-  aws cloudformation create-stack                         \
-    --profile ${PROFILE}                                  \
-    --stack-name "${STACK_NAME}"                          \
-    --template-body "file://$(pwd)/${STACK_NAME}.yaml"
+  aws cloudformation create-stack                           \
+    --profile ${PROFILE}                                    \
+    --stack-name "${STACK_NAME}"                            \
+    --template-body "file://$(pwd)/${STACK_NAME}.yaml"      \
+    --capabilities "CAPABILITY_IAM" "CAPABILITY_NAMED_IAM"
 
 elif [[ "${OPERATION}" == "delete" ]]; then
 
-  aws cloudformation delete-stack                         \
-    --profile ${PROFILE}                                  \
+  aws cloudformation delete-stack                           \
+    --profile ${PROFILE}                                    \
     --stack-name "${STACK_NAME}"
 
 else

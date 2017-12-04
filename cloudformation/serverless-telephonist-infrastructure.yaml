@@ -53,6 +53,105 @@ Resources:
           RequireSymbols: false
           RequireUppercase: true
 
+  ServerlessTelephonistCognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    DependsOn:
+      - ServerlessTelephonistCognitoUserPool
+    Properties:
+      ClientName: !Sub
+        - "serverless-telephonist-${Stage}-cognito-user-pool-client-web-app"
+        - { Stage: !Ref STAGE }
+      UserPoolId: !Ref ServerlessTelephonistCognitoUserPool
+
+  ServerlessTelephonistCognitoIdentityPool:
+    Type: AWS::Cognito::IdentityPool
+    DependsOn:
+      - ServerlessTelephonistCognitoUserPool
+      - ServerlessTelephonistCognitoUserPoolClient
+    Properties:
+      IdentityPoolName: !Sub
+        - ServerlessTelephonistCognitoIdentityPool_${Stage}
+        - { Stage: !Ref STAGE }
+      AllowUnauthenticatedIdentities: false
+      CognitoIdentityProviders:
+        - ClientId: !Ref ServerlessTelephonistCognitoUserPoolClient
+          ProviderName: !GetAtt "ServerlessTelephonistCognitoUserPool.ProviderName"
+
+  ServerlessTelephonistIamRoleForAuthenticatedUsers:
+    Type: AWS::IAM::Role
+    DependsOn:
+      - ServerlessTelephonistCognitoIdentityPool
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Federated:
+                - "cognito-identity.amazonaws.com"
+            Action:
+              - "sts:AssumeRoleWithWebIdentity"
+            Condition:
+              "StringEquals":
+                "cognito-identity.amazonaws.com:aud": !Ref ServerlessTelephonistCognitoIdentityPool
+              "ForAnyValue:StringLike":
+                "cognito-identity.amazonaws.com:amr": authenticated
+      Path: "/"
+      Policies:
+        - PolicyName: ServerlessTelephonistIamRoleForAuthenticatedUsers
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - mobileanalytics:PutEvents
+                  - cognito-sync:*
+                  - cognito-identity:*
+                Resource: "*"
+
+  ServerlessTelephonistIamRoleForUnauthenticatedUsers:
+    Type: AWS::IAM::Role
+    DependsOn:
+      - ServerlessTelephonistCognitoIdentityPool
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Federated:
+                - "cognito-identity.amazonaws.com"
+            Action:
+              - "sts:AssumeRoleWithWebIdentity"
+            Condition:
+              "StringEquals":
+                "cognito-identity.amazonaws.com:aud": !Ref ServerlessTelephonistCognitoIdentityPool
+              "ForAnyValue:StringLike":
+                "cognito-identity.amazonaws.com:amr": unauthenticated
+      Path: "/"
+      Policies:
+        - PolicyName: ServerlessTelephonistIamRoleForUnauthenticatedUsers
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - mobileanalytics:PutEvents
+                  - cognito-sync:*
+                Resource: "*"
+
+  ServerlessTelephonistCognitoIdentityPoolRoleAttachment:
+    Type: AWS::Cognito::IdentityPoolRoleAttachment
+    DependsOn:
+      - ServerlessTelephonistCognitoIdentityPool
+      - ServerlessTelephonistIamRoleForAuthenticatedUsers
+      - ServerlessTelephonistIamRoleForUnauthenticatedUsers
+    Properties:
+      IdentityPoolId: !Ref ServerlessTelephonistCognitoIdentityPool
+      Roles:
+        authenticated: !GetAtt "ServerlessTelephonistIamRoleForAuthenticatedUsers.Arn"
+        unauthenticated: !GetAtt "ServerlessTelephonistIamRoleForUnauthenticatedUsers.Arn"
+
 Outputs:
 
   ServerlessTelephonistWebsiteBucketUrl:
@@ -60,11 +159,38 @@ Outputs:
       URL to the S3 website associated with the bucket.
     Value: !GetAtt "ServerlessTelephonistWebsiteBucket.WebsiteURL"
 
-  ServerlessTelephonistCognitoUserPoolArn:
+  ServerlessTelephonistCognitoUserPoolName:
     Description: >
-      Name of AWS Lambda storage S3 bucket.
-    Value: !GetAtt "ServerlessTelephonistCognitoUserPool.Arn"
+      Name of AWS Cognito user pool.
+    Value: !Ref ServerlessTelephonistCognitoUserPool
     Export:
       Name: !Sub
         - "serverless-telephonist-${Stage}-cognito-user-pool"
+        - { Stage: !Ref STAGE }
+
+  ServerlessTelephonistCognitoIdentityPoolName:
+    Description: >
+      Name of AWS Cognito identity pool.
+    Value: !Ref ServerlessTelephonistCognitoIdentityPool
+    Export:
+      Name: !Sub
+        - "serverless-telephonist-${Stage}-cognito-identity-pool"
+        - { Stage: !Ref STAGE }
+
+  ServerlessTelephonistCognitoUserPoolClientId:
+    Description: >
+      Name of AWS Cognito user pool client Id.
+    Value: !Ref ServerlessTelephonistCognitoUserPoolClient
+    Export:
+      Name: !Sub
+        - "serverless-telephonist-${Stage}-cognito-user-pool-client-id"
+        - { Stage: !Ref STAGE }
+
+  ServerlessTelephonistCognitoProviderName:
+    Description: >
+      Name of the AWS Cognito provider used for user pool.
+    Value: !GetAtt "ServerlessTelephonistCognitoUserPool.ProviderName"
+    Export:
+      Name: !Sub
+        - "serverless-telephonist-${Stage}-cognito-provider-name"
         - { Stage: !Ref STAGE }

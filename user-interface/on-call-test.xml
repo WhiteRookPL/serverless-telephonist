@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say voice="alice" lang="en-GB">
+    Hello On-call! This is just a test invoked from the UI. If you hear this, it means that any incident escalation calls will be redirected to your number from now on. Have a peaceful shift!
+  </Say>
+</Response>
