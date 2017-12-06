@@ -18,7 +18,9 @@
   var ErrorBoxTimeoutId = 0;
 
   const USER_POOL = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserPool(POOL_DATA);
-  var user = USER_POOL.getCurrentUser();
+
+  var Session = 0;
+  var User = USER_POOL.getCurrentUser();
 
   function showError(message) {
     if (ErrorBoxTimeoutId > 0) {
@@ -38,6 +40,10 @@
     $.ajax({
       url: GET_ON_CALL_DETAILS_API_ENDPOINT,
       type: "GET",
+
+      beforeSend: function (xhr) {
+        xhr.setRequestHeader("Authorization", Session.getIdToken().getJwtToken());
+      },
 
       success: function (response) {
         console.log("Getting on-call details: ", response);
@@ -59,6 +65,10 @@
       type: "POST",
       contentType: "application/json; charset=utf-8",
 
+      beforeSend: function (xhr) {
+        xhr.setRequestHeader("Authorization", Session.getIdToken().getJwtToken());
+      },
+
       success: function (response) {
         $("#test-on-call-modal").modal(PERSISTENT_MODAL);
       },
@@ -70,7 +80,7 @@
   }
 
   function hideContent() {
-    user = null;
+    User = null;
 
     $("#content").addClass("none");
 
@@ -88,7 +98,7 @@
   }
 
   $("#sign-out-box-submit").click(function (event) {
-    user.signOut();
+    User.signOut();
     hideContent();
   });
 
@@ -137,7 +147,7 @@
             showError(error.toString());
             hideContent();
           } else {
-            user = cognitoUser;
+            User = cognitoUser;
             showContent(cognitoUser);
           }
         });
@@ -188,18 +198,20 @@
     });
   });
 
-  if (!!user) {
-    user.getSession(function (error, session) {
+  if (!!User) {
+    User.getSession(function (error, freshSession) {
+      Session = freshSession;
+
       if (error) {
         showError(error.toString());
         return;
       }
 
       // Decide if we have session or not.
-      if (!session.isValid()) {
+      if (!Session.isValid()) {
         hideContent();
       } else {
-        showContent(user);
+        showContent(User);
       }
     });
   }

@@ -22,8 +22,8 @@ functions:
           method: post
           integration: lambda
           cors: true
-          authorization:
-            Fn::ImportValue: "serverless-telephonist-${self:provider.stage}-cognito-user-pool"
+          authorizer:
+            arn: "arn:aws:cognito-idp:${self:provider.region}:${file(.local-keys.yml):AWS_ACCOUNT_ID}:userpool/${file(.local-keys.yml):COGNITO_USER_POOL_NAME}"
           statusCodes:
             200:
               pattern: ''
