@@ -1,3 +1,11 @@
 PAGER_DUTY_DOMAIN: <Your subdomain used PagerDuty>
 PAGER_DUTY_API_KEY: <Your API to PagerDuty>
 PAGER_DUTY_SCHEDULE_ID: <ID of your desired schedule in PagerDuty>
+
+TWILIO_ACCOUNT_SID: <Your Twilio account SID>
+TWILIO_API_TOKEN: <Your Twilio API token>
+
+CALLER: "+48<Phone number that will call us for the test>"
+ON_CALL_NUMBER: "+48<Phone number that will be paged and called by external systems>"
+
+TEST_SCENARIO_TWIML_URL: <Test scenario that will be used by caller during test>
