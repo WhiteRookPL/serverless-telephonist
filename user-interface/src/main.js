@@ -1,8 +1,8 @@
 (function (window) {
   "use strict";
 
-  const GET_ON_CALL_DETAILS_API_ENDPOINT = "https://qk98ppo7la.execute-api.eu-central-1.amazonaws.com/production/operators/current/details";
-  const TEST_ON_CALL_API_ENDPOINT = "https://lfhpq8hjq3.execute-api.eu-central-1.amazonaws.com/production/calls/test";
+  const GET_ON_CALL_DETAILS_API_ENDPOINT = "https://<YOUR C# API>.execute-api.eu-central-1.amazonaws.com/production/operators/current/details";
+  const TEST_ON_CALL_API_ENDPOINT = "https://<YOUR F# API>.execute-api.eu-central-1.amazonaws.com/production/calls/test";
 
   const PERSISTENT_MODAL = {
     backdrop: "static",
