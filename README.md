@@ -8,7 +8,7 @@ How to manage on-call rotation effortlessly and in a cost effective way? Let's l
 
 Repository is a foundation for lectures and workshops. I have performed it in following places:
 
-- [devwarsztaty.pl 2017](https://devwarsztaty.pl) (*Katowice*, *Poland*).
+- [Microsoft User Group Katowice 2017](https://www.meetup.com/%C5%9Al%C4%85ska-Grupa-Microsoft-Meetup/events/245180960/) (*Katowice*, *Poland*).
 
 ## Topics
 
